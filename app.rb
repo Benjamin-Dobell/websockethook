@@ -79,3 +79,17 @@ post '/hook/:id' do
   sockets.keys.each { |ws| ws.send message }
   {}.to_json
 end
+
+Thread.new do
+  ping_frequency = (ENV['PING_FREQUENCY'] || 30).to_i
+
+  loop do
+    sockets = settings.sockets.keys.clone
+
+    sockets.each do |socket|
+      socket.send({type:'ping'}.to_json)
+    end
+
+    sleep ping_frequency
+  end
+end
