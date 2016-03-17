@@ -17,7 +17,7 @@ def register(ws, id)
     type: 'registered',
     data: socket_info
   }
-  
+
   message = message_data.to_json
   puts "sending: #{message}"
   ws.send message
@@ -42,13 +42,13 @@ get '/' do
         puts "received: #{message}"
         data = JSON.parse(message)
         if data['type']=='register' && data['id']
-          if /^\w+$/ === data['id']
-            register(ws,data['id'])
+          if /^[a-zA-Z0-9._-]+$/ === data['id']
+            register(ws, data['id'].downcase)
           else
-            ws.send({type:'error', message:'ID must be a letter, number, or underscore'}.to_json) 
+            ws.send({type:'error', message:'ID may only include alphanumeric characters, periods, underscores and hyphens'}.to_json)
           end
         elsif data['type']=='unregister' && data['id']
-          unregister(ws,data['id']) 
+          unregister(ws, data['id'].downcase)
         else
           ws.send({type:'error', message:'No such command'}.to_json)
         end
@@ -63,7 +63,7 @@ get '/' do
 end
 
 post '/hook/:id' do
-  id = params[:id]
+  id = params[:id].downcase
   sockets = settings.sockets.select {|ws,hooks| hooks.any?{|hook| hook[:id] == id}}
   halt 404 unless sockets.count > 0
 
