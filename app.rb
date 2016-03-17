@@ -11,8 +11,8 @@ def register(ws, id)
     id: id,
     path: "/hook/#{id}"
   }
-  settings.sockets[ws] ||= []
-  settings.sockets[ws] << socket_info
+  settings.sockets[ws] ||= {}
+  settings.sockets[ws][id] = socket_info
   message_data = {
     type: 'registered',
     data: socket_info
@@ -64,7 +64,7 @@ end
 
 post '/hook/:id' do
   id = params[:id].downcase
-  sockets = settings.sockets.select {|ws,hooks| hooks.any?{|hook| hook[:id] == id}}
+  sockets = settings.sockets.select {|ws,hooks| hooks[id]}
   halt 404 unless sockets.count > 0
 
   ['splat','captures','id'].each {|k| params.delete k}
